@@ -1,0 +1,84 @@
+import json
+import logging as lg
+import random
+
+lg.basicConfig(filename='wordle-log.log', level=lg.DEBUG, filemode='w', format='%(levelname)s - %(message)s')
+
+WORDS_DB = 'wrds_db.json'
+words = None
+grid = [[['_', 0] for _ in range(5)] for _ in range(6)]
+with open(WORDS_DB, 'r') as f:
+    words = json.load(f)['words']
+
+
+def inWords(wrd, start=0, end=len(words)-1):
+    if start > end: return False
+    mid = (start + end) // 2
+    if wrd == words[mid]:
+        return True
+    elif wrd > words[mid]:
+        return inWords(wrd, mid + 1, end)
+    else:
+        return inWords(wrd, start, mid - 1)
+
+
+def printGrid():
+    for row in grid:
+        for col in row:
+            color = ''
+            if col[1] == 1: color = 33
+            elif col[1] == 2: color = 32
+            else: color = 90
+            print(f'\033[{color}m{col[0]}\033[m', end=' ')
+        print()
+
+
+def ignore(lst, idxs):
+    for i in idxs:
+        lst.pop(i)
+    return lst
+
+
+if __name__ == '__main__':
+    selectedWord = random.choice(words)
+    lg.info(f'Selected Word: \'{selectedWord}\'')
+    prevWrd = ''
+
+    parsed = []
+    ln = 0
+    while ln < 7:
+        printGrid()
+        if prevWrd == selectedWord:
+            print(f'\n\033[32mCongratulations! The word was \'{selectedWord}\'!\033[m')
+            exit()
+        if ln == 6: break
+        inputWrd = input('> ')
+        if len(inputWrd) != 5 and not inWords(inputWrd):
+            print("Invalid word! Try again\n")
+            continue
+        lg.debug(f'Input: {inputWrd}')
+
+        parsed.clear()
+        prevWrd = inputWrd
+        for i in range(5):
+            grid[ln][i][0] = inputWrd[i]
+            if inputWrd[i] == selectedWord[i]:
+                grid[ln][i][1] = 2
+                parsed.append(i)
+            elif i not in parsed:
+                cont = None
+                for j in range(5):
+                    if j not in parsed:
+                        if inputWrd[i] == selectedWord[j]:
+                            cont = j
+                            break
+                if cont is not None:
+                    grid[ln][i][1] = 1
+                    parsed.append(cont)
+            lg.debug(f'i: {i}, lttr: {inputWrd[i]}')
+            lg.debug(f'Greens: {parsed}')
+
+        ln += 1
+        print()
+
+    print(f'\n\033[31mThe word was \'{selectedWord}\'. Good Try!\033[m')            
