@@ -37,19 +37,12 @@ def printGrid():
         print()
 
 
-def ignore(lst, idxs):
-    for i in idxs:
-        lst.pop(i)
-    return lst
-
-
 if __name__ == '__main__':
     selectedWord = random.choice(sum([v for _,v in words.items()], []))
     lg.info(f'Selected Word: \'{selectedWord}\'')
-    prevWrd = ''
 
-    parsed = []
     ln = 0
+    ignoreIdxs = []
     printGrid()
     while ln < 6:
         inputWrd = input('> ')
@@ -58,31 +51,32 @@ if __name__ == '__main__':
             continue
         lg.debug(f'Input: {inputWrd}')
 
-        parsed.clear()
-        prevWrd = inputWrd
+        ignoreIdxs.clear()
+        sWord = list(selectedWord)
+        iWord = list(inputWrd)
         for i in range(5):
-            inputChr = inputWrd[i]
-            grid[ln][i][0] = inputChr
-            # Greens
-            if inputChr == selectedWord[i]:
+            grid[ln][i][0] = iWord[i]
+            if sWord[i] == iWord[i]:
                 grid[ln][i][1] = 2
-                parsed.append(i)
-                lg.debug(f'green, parsed:- {i}: {inputChr}')
-            # Yellows
-            elif i not in parsed:
-                for j in range(5):
-                    if j not in parsed:
-                        if inputChr == selectedWord[j]:
-                            grid[ln][i][1] = 1
-                            parsed.append(j)
-                            lg.debug(f'yellow, parsed:- {j}: {inputChr}')
-                            break
-        print()
+                ignoreIdxs.append(i)
+        lg.debug(f'ignoreIdxs: {ignoreIdxs}, sWord: {sWord}, iWord: {iWord}')
+        for idx in sorted(ignoreIdxs, reverse=True):
+            sWord.pop(idx)
+        lg.debug(f'sWord: {sWord}')
+        for i in range(5):
+            if i in ignoreIdxs: continue
+            if iWord[i] in sWord:
+                grid[ln][i][1] = 1
+                sWord.remove(iWord[i])
+                lg.debug(f'yellow {iWord[i]}, {sWord}')
+                continue
+
         printGrid()
-        if prevWrd == selectedWord:
-            print(f'\033[32mCongratulations! The word was \'{selectedWord}\'!\033[m')
+        if inputWrd == selectedWord:
+            print(f'\n\033[32mCongratulations! The word was \'{selectedWord}\'!\033[m')
             exit()
 
         ln += 1
+        print()
 
-    print(f'\n\033[31mThe word was \'{selectedWord}\'. Good Try!\033[m')            
+    print(f'\033[31mThe word was \'{selectedWord}\'. Good Try!\033[m')            
