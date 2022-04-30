@@ -4,22 +4,26 @@ import random
 
 lg.basicConfig(filename='wordle-log.log', level=lg.DEBUG, filemode='w', format='%(levelname)s - %(message)s')
 
-WORDS_DB = 'wrds_db.json'
+WORDS_DB = 'words_db.json'
 words = None
 grid = [[['_', 0] for _ in range(5)] for _ in range(6)]
 with open(WORDS_DB, 'r') as f:
-    words = json.load(f)['words']
+    words = json.load(f)
 
 
-def inWords(wrd, start=0, end=len(words)-1):
+def _inWords(wrd, start=0, end=len(words)-1):
     if start > end: return False
     mid = (start + end) // 2
     if wrd == words[mid]:
         return True
     elif wrd > words[mid]:
-        return inWords(wrd, mid + 1, end)
+        return _inWords(wrd, mid + 1, end)
     else:
-        return inWords(wrd, start, mid - 1)
+        return _inWords(wrd, start, mid - 1)
+
+
+def inWords(wrd):
+    return wrd in words[wrd[:2]]
 
 
 def printGrid():
@@ -40,18 +44,14 @@ def ignore(lst, idxs):
 
 
 if __name__ == '__main__':
-    selectedWord = random.choice(words)
+    selectedWord = random.choice(sum([v for _,v in words.items()], []))
     lg.info(f'Selected Word: \'{selectedWord}\'')
     prevWrd = ''
 
     parsed = []
     ln = 0
-    while ln < 7:
-        printGrid()
-        if prevWrd == selectedWord:
-            print(f'\n\033[32mCongratulations! The word was \'{selectedWord}\'!\033[m')
-            exit()
-        if ln == 6: break
+    printGrid()
+    while ln < 6:
         inputWrd = input('> ')
         if len(inputWrd) != 5 and not inWords(inputWrd):
             print("Invalid word! Try again\n")
@@ -61,24 +61,28 @@ if __name__ == '__main__':
         parsed.clear()
         prevWrd = inputWrd
         for i in range(5):
-            grid[ln][i][0] = inputWrd[i]
-            if inputWrd[i] == selectedWord[i]:
+            inputChr = inputWrd[i]
+            grid[ln][i][0] = inputChr
+            # Greens
+            if inputChr == selectedWord[i]:
                 grid[ln][i][1] = 2
                 parsed.append(i)
+                lg.debug(f'green, parsed:- {i}: {inputChr}')
+            # Yellows
             elif i not in parsed:
-                cont = None
                 for j in range(5):
                     if j not in parsed:
-                        if inputWrd[i] == selectedWord[j]:
-                            cont = j
+                        if inputChr == selectedWord[j]:
+                            grid[ln][i][1] = 1
+                            parsed.append(j)
+                            lg.debug(f'yellow, parsed:- {j}: {inputChr}')
                             break
-                if cont is not None:
-                    grid[ln][i][1] = 1
-                    parsed.append(cont)
-            lg.debug(f'i: {i}, lttr: {inputWrd[i]}')
-            lg.debug(f'Greens: {parsed}')
+        print()
+        printGrid()
+        if prevWrd == selectedWord:
+            print(f'\033[32mCongratulations! The word was \'{selectedWord}\'!\033[m')
+            exit()
 
         ln += 1
-        print()
 
     print(f'\n\033[31mThe word was \'{selectedWord}\'. Good Try!\033[m')            
