@@ -43,10 +43,7 @@ class Wordle():
         self.line = self.col = 0
         self.grid_offset = Vec2(25, 25)
         self.cell_spacing = 20
-        self.cell_size = Vec2(
-            (self.WIN_DIMENS.x - (self.grid_offset.x * 2) - (self.cell_spacing * 4)) // 5,
-            (self.WIN_DIMENS.y - 45 - (self.grid_offset.y * 2) - (self.cell_spacing * 5)) // 6
-        )
+        self.cell_size = Vec2(74, 75) 
         self.msg = ''
         self.game_over = False
 
