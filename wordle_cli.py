@@ -2,7 +2,7 @@ import json
 import logging as lg
 import random
 
-lg.basicConfig(filename='wordle-log.log', level=lg.DEBUG, filemode='w', format='%(levelname)s - %(message)s')
+lg.basicConfig(filename='wordle_cli.log', level=lg.DEBUG, filemode='w', format='%(levelname)s - %(message)s')
 
 WORDS_DB = 'words_db.json'
 words = None
