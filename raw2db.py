@@ -8,7 +8,7 @@ data = {f'{l1}{l2}':[] for l1 in string.ascii_lowercase for l2 in string.ascii_l
 with open('raw_words.txt') as f:
     ln = f.readline()[:-1]
     while ln:
-        if len(ln) == 5:
+        if len(ln) == 5 and ln not in data[ln[:2]]:
             data[ln[:2]].append(ln)
         ln = f.readline()[:-1]
 
