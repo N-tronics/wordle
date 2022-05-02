@@ -48,6 +48,7 @@ class Wordle():
         self.cell_size = Vec2(74, 75) 
         self.msg = ''
         self.game_over = False
+        self.update = True
 
         self.selected_word = rchoice(sum([v for _,v in WORD_SET.items()], []))
 
@@ -100,6 +101,7 @@ class Wordle():
         self.col = 0 
 
     def draw(self):
+        if not self.update: return
         for i, row in enumerate(self.grid):
             for j, col in enumerate(row):
                 char = self.char_font.render(col.x.upper(), True, (255, 255, 255))
@@ -122,6 +124,7 @@ class Wordle():
         ))
 
         pygame.display.update()
+        self.update = False
 
     def start(self):
         lg.info('Starting Wordle')
@@ -138,14 +141,17 @@ class Wordle():
                         lg.info('Backspace')
                         self.remove_character()
                         lg.info(self.grid)
+                        self.update = True
                     elif event.key >= pygame.K_a and event.key <= pygame.K_z and self.col < 5:
                         lg.info(f'key press: {chr(event.key)}')
                         self.insert_character(chr(event.key))
                         lg.info(self.grid)
+                        self.update = True
                     elif event.key == pygame.K_RETURN and self.col == 5:
                         lg.info('Enter')
                         self.check_word()
                         lg.info(self.grid)
+                        self.update = True
             self.draw()
 
 
