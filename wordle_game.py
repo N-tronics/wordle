@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 import pygame
 import logging as lg
 from random import choice as rchoice
@@ -18,9 +19,10 @@ COLORS = {
 }
 
 
+@dataclass
 class Vec2():
-    def __init__(self, x, y):
-        self.x, self.y = x, y
+    x: int
+    y: int
 
     def get_tuple(self):
         return self.x, self.y
