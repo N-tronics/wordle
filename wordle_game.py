@@ -41,15 +41,18 @@ class Wordle():
         self.msg_font = pygame.font.SysFont('chandas', 32)
         pygame.display.set_caption('Wordle')
 
-        self.grid = [[Vec2('', -1) for _ in range(5)] for _ in range(6)]
-        self.line = self.col = 0
         self.grid_offset = Vec2(25, 25)
         self.cell_spacing = 20
         self.cell_size = Vec2(74, 75) 
+
+        self.reset()
+
+    def reset(self):
+        self.grid = [[Vec2('', -1) for _ in range(5)] for _ in range(6)]
+        self.line = self.col = 0
         self.msg = ''
         self.game_over = False
         self.update = True
-
         self.selected_word = rchoice(sum([v for _,v in WORD_SET.items()], []))
 
     def insert_character(self, char):
@@ -101,6 +104,7 @@ class Wordle():
         self.col = 0 
 
     def draw(self):
+        self.WIN.fill((0, 0, 0))
         if not self.update: return
         for i, row in enumerate(self.grid):
             for j, col in enumerate(row):
@@ -136,18 +140,22 @@ class Wordle():
                     lg.info('Quitting Wordle')
                     pygame.quit()
                     sys_exit(0)
-                if event.type == pygame.KEYUP and not self.game_over:
-                    if event.key == pygame.K_BACKSPACE and self.col > 0:
+                if event.type == pygame.KEYUP:
+                    if event.key == pygame.K_BACKSPACE and self.col > 0 and not self.game_over:
                         lg.info('Backspace')
                         self.remove_character()
                         lg.info(self.grid)
                         self.update = True
                     elif event.key >= pygame.K_a and event.key <= pygame.K_z and self.col < 5:
-                        lg.info(f'key press: {chr(event.key)}')
-                        self.insert_character(chr(event.key))
-                        lg.info(self.grid)
-                        self.update = True
-                    elif event.key == pygame.K_RETURN and self.col == 5:
+                        if event.key == pygame.K_r and self.game_over:
+                            self.reset()
+                            lg.info('Reseting Wordle...')
+                        else:
+                            lg.info(f'key press: {chr(event.key)}')
+                            self.insert_character(chr(event.key))
+                            lg.info(self.grid)
+                            self.update = True
+                    elif event.key == pygame.K_RETURN and self.col == 5 and not self.game_over:
                         lg.info('Enter')
                         self.check_word()
                         lg.info(self.grid)
