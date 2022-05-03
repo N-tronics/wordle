@@ -20,8 +20,8 @@ COLORS = {
 
 
 @dataclass
-class Vec2():
-    x: int
+class Vec2:
+    x: int | str
     y: int
 
     def get_tuple(self):
@@ -31,7 +31,7 @@ class Vec2():
         return f'[{self.x} {self.y}]'
 
 
-class Wordle():
+class Wordle:
     def __init__(self):
         self.WIN_DIMENS = Vec2(500, 650)
         self.WIN = pygame.display.set_mode(self.WIN_DIMENS.get_tuple())
@@ -43,7 +43,7 @@ class Wordle():
 
         self.grid_offset = Vec2(25, 25)
         self.cell_spacing = 20
-        self.cell_size = Vec2(74, 75) 
+        self.cell_size = Vec2(74, 75)
 
         self.reset()
 
@@ -53,7 +53,7 @@ class Wordle():
         self.msg = ''
         self.game_over = False
         self.update = True
-        self.selected_word = rchoice(sum([v for _,v in WORD_SET.items()], []))
+        self.selected_word = rchoice(sum([v for _, v in WORD_SET.items()], []))
 
     def insert_character(self, char):
         self.grid[self.line][self.col].x = char
@@ -63,32 +63,31 @@ class Wordle():
         self.col -= 1
         self.grid[self.line][self.col].x = ''
 
-    def in_words(self, wrd):
-        return wrd in WORD_SET[wrd[:2]]
-
     def check_word(self):
         wrd = ''
         for c in self.grid[self.line]:
             wrd += c.x
-        if not self.in_words(wrd):
+        if wrd not in WORD_SET[wrd[:2]]:
             return
         lg.info(f'Evaluating word {wrd}')
-        ignoreIdxs = []
+        checked_indexes = []
         sel_wrd = list(self.selected_word)
         for i in range(5):
             if self.grid[self.line][i].x == sel_wrd[i]:
                 self.grid[self.line][i].y = 2
-                ignoreIdxs.append(i)
-        for i in sorted(ignoreIdxs, reverse=True):
+                checked_indexes.append(i)
+        for i in sorted(checked_indexes, reverse=True):
             sel_wrd.pop(i)
         for i in range(5):
-            if i in ignoreIdxs: continue
+            if i in checked_indexes:
+                continue
             if self.grid[self.line][i].x in sel_wrd:
                 self.grid[self.line][i].y = 1
-                ignoreIdxs.append(i)
+                checked_indexes.append(i)
                 sel_wrd.remove(self.grid[self.line][i].x)
         for i in range(5):
-            if i in ignoreIdxs: continue
+            if i in checked_indexes:
+                continue
             self.grid[self.line][i].y = 0
 
         if wrd == self.selected_word:
@@ -101,11 +100,12 @@ class Wordle():
             self.game_over = True
 
         self.line += 1
-        self.col = 0 
+        self.col = 0
 
     def draw(self):
         self.WIN.fill((0, 0, 0))
-        if not self.update: return
+        if not self.update:
+            return
         for i, row in enumerate(self.grid):
             for j, col in enumerate(row):
                 char = self.char_font.render(col.x.upper(), True, (255, 255, 255))
@@ -146,10 +146,10 @@ class Wordle():
                         self.remove_character()
                         lg.info(self.grid)
                         self.update = True
-                    elif event.key >= pygame.K_a and event.key <= pygame.K_z and self.col < 5:
+                    elif pygame.K_a <= event.key <= pygame.K_z and self.col < 5:
                         if event.key == pygame.K_r and self.game_over:
                             self.reset()
-                            lg.info('Reseting Wordle...')
+                            lg.info('Resetting Wordle...')
                         else:
                             lg.info(f'key press: {chr(event.key)}')
                             self.insert_character(chr(event.key))
