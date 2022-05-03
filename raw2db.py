@@ -16,12 +16,14 @@ with open('raw_words.txt') as f:
 if len(sys.argv) >= 2 and sys.argv[1] == 'txt':
     with open('words_db.txt', 'w') as f:
         for _,wrds in data.items():
-            for wrd in wrds:
+            for wrd in sorted(set(wrds)):
                 f.write(f'{wrd}\n')
 else:
     _data = copy.deepcopy(data)
     for grp, lst in _data.items():
         if len(lst) == 0: data.pop(grp)
+        else:
+            data[grp] = sorted(set(lst))
 
     with open('words_db.json', 'w') as f:
         json.dump(data, f, indent=4)
